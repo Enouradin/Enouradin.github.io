@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAEPE-RH — Plateforme de pilotage du portefeuille de projets (démonstration)</title>
+<style>
+  :root{--bleu:#0b3d66;--bleu2:#0e7c8c;--bg:#eef3f6;--card:#fff;--text:#1d2b36;--muted:#5d7285;--line:#d8e2ea;--rouge:#c0392b;--orange:#e67e22;--vert:#1e8e4f;--ambre:#fdf3e0}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+  header{background:var(--bleu);color:#fff;padding:20px 0 16px}
+  header .rep{font-size:.85rem;letter-spacing:1.5px;text-transform:uppercase;color:#bcd7ea;margin:0}
+  header h1{margin:4px 0 2px;font-size:1.5rem;line-height:1.3}
+  header .min{margin:0;color:#d9ecf7;font-size:1rem}
+  .demo{background:#b03a2e;color:#fff;text-align:center;font-weight:700;padding:7px 10px;font-size:.92rem}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:22px 0}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center}
+  .kpi .n{font-size:2rem;font-weight:800;color:var(--bleu)}
+  .kpi .l{color:var(--muted);font-size:.92rem}
+  h2{color:var(--bleu);margin:26px 0 10px;border-bottom:3px solid var(--bleu2);display:inline-block;padding-bottom:3px}
+  .alertes{display:grid;gap:10px}
+  .alerte{border-radius:10px;padding:12px 16px;border:1px solid var(--line);background:var(--card);display:flex;gap:12px;align-items:flex-start}
+  .alerte .pt{font-size:1.25rem;line-height:1.2}
+  .alerte.rouge{background:#fdeeec;border-color:#e6b0aa}
+  .alerte.orange{background:var(--ambre);border-color:#ecd3a0}
+  .projets{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+  .proj{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .proj h3{margin:0 0 2px;color:var(--bleu)}
+  .proj .nom{color:var(--muted);font-size:.9rem;margin:0 0 10px}
+  .proj dl{margin:0;font-size:.94rem}
+  .proj dt{font-weight:700;margin-top:7px}
+  .proj dd{margin:0}
+  .bar{height:10px;background:#e6edf2;border-radius:5px;overflow:hidden;margin-top:4px}
+  .bar>div{height:100%}
+  .chip{display:inline-block;font-size:.78rem;font-weight:700;color:#fff;border-radius:20px;padding:2px 10px;vertical-align:middle}
+  .pipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+  .pipe .p{background:var(--card);border:1px dashed var(--bleu2);border-radius:12px;padding:14px 16px}
+  .pipe h4{margin:0 0 4px;color:var(--bleu)}
+  .pipe p{margin:0;font-size:.93rem}
+  footer{color:var(--muted);font-size:.88rem;padding:28px 0 40px}
+  .src{font-size:.82rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<!-- Révision du 25 octobre 2026 : informations institutionnelles alignées sur le site officiel du Ministère (https://www.maepe-rh.dj) — Ministre : M. Radwan Abdillahi Bahdon ; feuille de route : Vision Djibouti 2035 / SCAPE / PNIASAN. Données projets : Rapport annuel 2025. -->
+<header>
+  <div class="wrap">
+    <p class="rep">République de Djibouti — Unité · Travail · Progrès</p>
+    <h1>Plateforme de pilotage du portefeuille de projets</h1>
+    <p class="min">Ministère de l'Agriculture, de l'Eau, de la Pêche, de l'Élevage et des Ressources Halieutiques (MAEPE-RH) — Ministre : <strong>M. Radwan Abdillahi Bahdon</strong> · Bureau de Gestion de Projets (BGP)</p>
+  </div>
+</header>
+<div class="demo">PROTOTYPE DE DÉMONSTRATION réalisé à titre personnel — outil NON officiel, non adopté ni validé par le Ministère · Données publiques du Rapport annuel 2025 du MAEPE-RH et du site officiel maepe-rh.dj · La version opérationnelle sera interne et à accès contrôlé</div>
+
+<div class="wrap">
+
+  <div class="kpis">
+    <div class="kpi"><div class="n">6</div><div class="l">projets de développement rural en cours</div></div>
+    <div class="kpi"><div class="n">12</div><div class="l">initiatives en pipeline (préparation, conventions, mobilisation)</div></div>
+    <div class="kpi"><div class="n">3</div><div class="l">bailleurs principaux : BAD, FIDA, Banque mondiale</div></div>
+    <div class="kpi"><div class="n" style="color:var(--rouge)">1</div><div class="l">projet en alerte critique (décaissement inférieur à 3 %)</div></div>
+  </div>
+
+  <h2>🚨 Alertes du portefeuille</h2>
+  <div class="alertes">
+    <div class="alerte rouge"><div class="pt">🔴</div><div><strong>PEJACC — démarrage critique.</strong> Décaissement de <strong>2,22 %</strong> seulement (155 392 UC) ; travaux des périmètres irrigués non démarrés ; le recrutement de l'assistant en suivi-évaluation a été <em>infructueux</em> (relance en cours). <span class="src">Action suggérée : revue de démarrage au BGP sous 30 jours.</span></div></div>
+    <div class="alerte orange"><div class="pt">🟠</div><div><strong>FAR — décalage physique / financier.</strong> 86,96 % des actions du PTBA 2025 réalisées et engagement de 105 %, mais <strong>décaissement de 45 %</strong> seulement ; 3 actions critiques non démarrées (études géophysiques, préfaisabilités PPP) = risque pour la planification ultérieure.</div></div>
+    <div class="alerte orange"><div class="pt">🟠</div><div><strong>BREFONS — délais consommés supérieurs à l'avancement.</strong> Décaissement du prêt FAD : <strong>36,72 %</strong>. Travaux de forages : 90 % d'avancement pour 104 % du délai consommé (avenant n°01) ; 1 forage non exploitable à Doka-Af.</div></div>
+  </div>
+
+  <h2>📁 Projets en cours</h2>
+  <div class="projets">
+
+    <div class="proj">
+      <h3>BREFONS <span class="chip" style="background:var(--orange)">Vigilance délais</span></h3>
+      <p class="nom">Résilience face à l'insécurité alimentaire et nutritionnelle — Corne de l'Afrique</p>
+      <dl>
+        <dt>Bailleur</dt><dd>Banque Africaine de Développement — Prêt FAD de <strong>13 930 000 UC</strong></dd>
+        <dt>Décaissement</dt><dd>5 114 634 UC — <strong>36,72 %</strong><div class="bar"><div style="width:37%;background:var(--orange)"></div></div></dd>
+        <dt>Avancement 2025</dt><dd>Forages : 90 % (délai consommé 104 %) · AEP Karta : 45 % · Mini-AEP Holl-Holl réceptionnée (11 sept. 2025) · Périmètres irrigués : Ambouli 45 %, Tadjourah 89 %</dd>
+        <dt>Zones</dt><dd>Tadjourah, Obock, Ali Sabieh, Djibouti-ville</dd>
+        <dt>Programmation 2026</dt><dd>Périmètres irrigués 1 344 629 UC · Eau potable 1 411 907 UC · Pistes rurales 30 km 1 200 000 UC · Ferme aquicole 734 360 UC</dd>
+      </dl>
+    </div>
+
+    <div class="proj">
+      <h3>PEJACC <span class="chip" style="background:var(--rouge)">Alerte démarrage</span></h3>
+      <p class="nom">Entrepreneuriat des jeunes pour l'adaptation au changement climatique</p>
+      <dl>
+        <dt>Bailleurs</dt><dd>BAD (dons FAD, FAT, CAW) et prêt FIDA — enveloppe totale ≈ 31,9 millions UC <span class="src">(montants tels que figurant au rapport)</span></dd>
+        <dt>Décaissement</dt><dd>155 392 UC — <strong>2,22 %</strong><div class="bar"><div style="width:2.2%;background:var(--rouge)"></div></div></dd>
+        <dt>Avancement 2025</dt><dd>Phase de démarrage : marchés Q6 signé (avenant en attente d'avis), Ambouli en signature, périmètres non démarrés, assistant suivi-évaluation non recruté</dd>
+        <dt>Zones</dt><dd>Djibouti-ville (Q6, Ambouli), Tadjourah, Dikhil, forages de Dorra et Gallafi</dd>
+        <dt>Programmation 2026</dt><dd>Périmètres irrigués 5 298 430 UC · Marchés Q6 et Ambouli ≈ 2 476 304 UC · Équipement solaire des forages 797 257 UC</dd>
+      </dl>
+    </div>
+
+    <div class="proj">
+      <h3>DRIVE <span class="chip" style="background:var(--bleu2)">En cours</span></h3>
+      <p class="nom">Réduction des risques, inclusion et valorisation des économies pastorales (régional)</p>
+      <dl>
+        <dt>Montage</dt><dd>Assurance souveraine sécheresse (produit ARC via ZEP-RE) ; composante mise en œuvre par le Centre d'Exécution de Projet au MAEPE-RH <span class="src">(bailleur non précisé au rapport)</span></dd>
+        <dt>Avancement 2025</dt><dd>Diagnostic des infrastructures d'élevage en cours ; certificat de quarantaine numérisé (cahier des charges finalisé) ; facilité d'investissement lancée (appel clôturé le 30 oct. 2025)</dd>
+        <dt>Zones</dt><dd>Corridor bétail Djibouti–Éthiopie ; infrastructures nationales (abattoir, quarantaine, laboratoire)</dd>
+        <dt>Programmation 2026</dt><dd>Police d'assurance climat 800 000 USD · Équipements infrastructures d'élevage 250 000 USD · Facilitation commerciale 380 000 USD</dd>
+      </dl>
+    </div>
+
+    <div class="proj">
+      <h3>PGIRE <span class="chip" style="background:var(--vert)">Résultats solides</span></h3>
+      <p class="nom">Gestion intégrée des ressources en eau (depuis juin 2021)</p>
+      <dl>
+        <dt>Bailleur</dt><dd>FIDA — coût total initial <strong>14,54 M USD</strong> + financement additionnel FIDA 12 de <strong>6,3 M USD</strong></dd>
+        <dt>Portée</dt><dd>13 bassins versants (Obock, Tadjourah, Dikhil) · 47 localités · <strong>80 724 bénéficiaires</strong> (11 532 ménages)</dd>
+        <dt>Avancement 2025</dt><dd><strong>12 citernes de 100 m³ achevées (100 % de la cible)</strong> · 2 puits réhabilités (400 ménages) · 26 comités de gestion (CGEP) · Mise en repos 255 ha (100 %) · Formations : 125 % de la cible</dd>
+        <dt>Perspectives 2026</dt><dd>1 retenue neuve + 3 réhabilitées · 6 forages réhabilités · 1 forage neuf à Medeho · Enquête à mi-parcours avant fin 2026</dd>
+      </dl>
+    </div>
+
+    <div class="proj">
+      <h3>FAR <span class="chip" style="background:var(--orange)">Écart financier</span></h3>
+      <p class="nom">Appui aux filières agricoles résilientes (en vigueur le 8 juillet 2024 — 5 ans)</p>
+      <dl>
+        <dt>Bailleur</dt><dd>Banque mondiale</dd>
+        <dt>Avancement physique 2025</dt><dd><strong>60 actions réalisées sur 69 (86,96 %)</strong> ; 95,66 % réalisées ou en cours<div class="bar"><div style="width:87%;background:var(--vert)"></div></div></dd>
+        <dt>Situation financière 2025</dt><dd>Engagement <strong>105 %</strong> (3 944 213) mais décaissement <strong>45 %</strong> (1 699 364 sur 3 750 000)<div class="bar"><div style="width:45%;background:var(--orange)"></div></div></dd>
+        <dt>Zones / filières</dt><dd>Pôles de croissance : plaine de Hanlé (dattier), Barrage de l'Amitié ; fruits et légumes, petits ruminants, œufs, fourrage</dd>
+        <dt>PTBA 2026</dt><dd><strong>6 316 000 USD</strong> — 13 forages solaires, 3 études de préfaisabilité PPP</dd>
+      </dl>
+    </div>
+
+    <div class="proj">
+      <h3>DRESS-EA <span class="chip" style="background:var(--bleu2)">En cours</span></h3>
+      <p class="nom">Résilience à la sécheresse des petits exploitants et pasteurs — région IGAD (4 pays)</p>
+      <dl>
+        <dt>Enveloppe</dt><dd><strong>2 406 480 $</strong> <span class="src">(part de Djibouti non distinguée au rapport ; bailleur non précisé)</span></dd>
+        <dt>Avancement 2025</dt><dd><strong>3 stations agrométéorologiques installées</strong> (Goubetto, As Eyla, Yoboki — données horaires) · 2 retenues d'excavation réalisées · Projet de loi sur la gestion de la sécheresse élaboré · Guide validé</dd>
+        <dt>Financement communautaire</dt><dd>MoU tripartite (déc.) : ligne de crédit de 299 000 USD pour 7 coopératives et 18 caisses mutuelles (Ali Sabieh, Dikhil)</dd>
+        <dt>Zones</dt><dd>Ali Sabieh, Dikhil + réseau régional d'alerte précoce (Djibouti, Kenya, Soudan, Ouganda)</dd>
+      </dl>
+    </div>
+
+  </div>
+
+  <h2>🧭 Pipeline — projets et initiatives en préparation</h2>
+  <div class="pipe">
+    <div class="p"><h4>DJIRESA — nouveau projet ressources en eau</h4><p>En préparation (réunion de travail DHR, 2025). Futur projet structurant du secteur de l'eau.</p></div>
+    <div class="p"><h4>Table ronde des bailleurs — agribusiness</h4><p>Feuille de route du Forum agribusiness (juin 2025) : <strong>90 M USD annoncés disponibles</strong> pour l'agriculture, ambition de mobilisation de 250–300 M USD.</p></div>
+    <div class="p"><h4>Palmier dattier de la plaine de Hanlé</h4><p>Projet gouvernemental (200 ha puis 1 000 ha) ; appui PNUD annoncé en hausse de 5 à <strong>13 M USD</strong> ; préfaisabilité PPP inscrite au PTBA 2026 du FAR.</p></div>
+    <div class="p"><h4>Abattoir aux normes internationales (PPP)</h4><p>Études de faisabilité via DRIVE : centre de transformation des produits de l'élevage en PPP ; opérateur privé recherché.</p></div>
+    <div class="p"><h4>Ferme aquicole pilote &amp; centre phoenicicole</h4><p>BREFONS/BAD : EIES en revue à la Banque, DAO transmis pour avis de non-objection ; travaux programmés en 2026 (734 360 UC et 542 300 UC).</p></div>
+    <div class="p"><h4>Conventions DHR — FAR / BREFONS / Environnement</h4><p>« En phase finale de finalisation » ; conditionnent la prise de fonction du personnel des bases régionales (la convention PGIRE–DHR est déjà opérationnelle).</p></div>
+  </div>
+
+  <h2>🌐 Le Ministère sur son site officiel — maepe-rh.dj</h2>
+  <div class="proj" style="margin-bottom:20px">
+    <dl>
+      <dt>Ministre</dt><dd><strong>M. Radwan Abdillahi Bahdon</strong>, Ministre de l'Agriculture, de l'Eau, de la Pêche, de l'Élevage et des Ressources Halieutiques. Devise : « Cultiver, nourrir et préserver l'eau de la Nation ». <a href="https://www.maepe-rh.dj/mot-du-ministre" target="_blank" rel="noopener">Mot du Ministre (site officiel)</a></dd>
+      <dt>Présentation officielle</dt><dd>4 directions techniques, 6 domaines d'intervention, 5 organismes sous tutelle (eau et assainissement, contrôle alimentaire, filière pêche, contrôle sanitaire du bétail, stocks alimentaires stratégiques), couverture nationale de 100 %. Missions : politiques de sécurité alimentaire, de développement rural et de l'eau — production agricole, animale et halieutique, gestion des ressources hydrauliques et assainissement.</dd>
+      <dt>Feuille de route</dt><dd>6 axes : souveraineté et sécurité alimentaire ; gestion durable de l'eau ; économie bleue et pêche ; élevage résilient et santé animale ; agriculture et couvert végétal ; développement rural durable. Cadres : Vision Djibouti 2035, SCAPE (stratégie nationale), PNIASAN 2016-2020 (stratégie sectorielle), chaîne PPBSE. <a href="https://www.maepe-rh.dj/strategie" target="_blank" rel="noopener">Feuille de route (site officiel)</a> · <a href="https://www.maepe-rh.dj/programmes" target="_blank" rel="noopener">Programmes phares (site officiel)</a></dd>
+      <dt>Actualités — site officiel</dt><dd>Aucune actualité datée n'a pu être relevée sur le site officiel lors de la révision du 25 octobre 2026 ; consulter directement <a href="https://www.maepe-rh.dj/" target="_blank" rel="noopener">maepe-rh.dj</a>.</dd>
+      <dt>Coordonnées officielles</dt><dd>Zone Industrielle Sud, Djibouti (BP 453) · Tél. (253) 21 35 12 97 · Fax (253) 35 31 78 · contact@maepe-rh.dj · Dimanche – jeudi, 7 h 30 – 14 h 00.</dd>
+    </dl>
+    <p class="src">Section ajoutée lors de la révision du 25 octobre 2026 — sources : pages officielles de maepe-rh.dj (accueil, mot du Ministre, feuille de route/stratégie), consultées le 25 octobre 2026.</p>
+  </div>
+
+  <h2>⚙️ Fonctionnement de la plateforme (version opérationnelle)</h2>
+  <div class="proj" style="margin-bottom:20px">
+    <dl>
+      <dt>Alimentation</dt><dd>Chaque coordonnateur de projet met à jour sa fiche mensuellement (avancement physique, engagements, décaissements, jalons, risques) — saisie guidée, pièces jointes.</dd>
+      <dt>Consolidation</dt><dd>Le <strong>Bureau de Gestion de Projets (BGP)</strong> valide et consolide : c'est l'outil du « dispositif central de suivi-évaluation » et du pilotage du portefeuille que le Rapport annuel 2025 appelle de ses vœux.</dd>
+      <dt>Pilotage</dt><dd>Tableau de bord du Ministre et du Secrétariat Général : alertes automatiques (seuils de décaissement, jalons en retard, écarts physique/financier), revue mensuelle du portefeuille, exports pour les bailleurs.</dd>
+      <dt>Accès et sécurité</dt><dd>Hébergement contrôlé, comptes par rôle (Ministre, SG, BGP, coordonnateurs, directions), journalisation ; aucune donnée interne exposée publiquement.</dd>
+    </dl>
+  </div>
+
+  <footer>
+    Prototype réalisé à titre personnel, à partir des données publiques du <em>Rapport annuel 2025 du MAEPE-RH</em> (portefeuille de projets de développement rural). Les montants sont reproduits tels qu'ils figurent au rapport ; les taux sont ceux du rapport ou calculés à partir de ses chiffres. Informations institutionnelles alignées sur le site officiel maepe-rh.dj (révision du 25 octobre 2026). Document de démonstration — ne constitue pas une publication officielle du Ministère.
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAEPE-RH — Tableau de bord du portefeuille de projets et des plans d'action</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root{--bleu:#0b3d66;--bleu2:#0e7c8c;--bg:#eef3f6;--card:#fff;--text:#1d2b36;--muted:#5d7285;--line:#d8e2ea;--rouge:#c0392b;--orange:#e67e22;--vert:#1e8e4f;--ambre:#fdf3e0}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+  header{background:var(--bleu);color:#fff;padding:18px 0 14px}
+  header .rep{font-size:.82rem;letter-spacing:1.5px;text-transform:uppercase;color:#bcd7ea;margin:0}
+  header h1{margin:4px 0 2px;font-size:1.45rem;line-height:1.3}
+  header .min{margin:0;color:#d9ecf7}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+  .toolbar button,.btn{background:var(--bleu);color:#fff;border:0;border-radius:8px;padding:9px 14px;font-weight:600;cursor:pointer;font-size:.95rem}
+  .toolbar button.alt{background:#fff;color:var(--bleu);border:1px solid var(--bleu)}
+  .toolbar button.on{background:var(--bleu2)}
+  .demo{background:#b03a2e;color:#fff;text-align:center;font-weight:700;padding:7px 10px;font-size:.92rem}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:6px 0 20px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+  .kpi .n{font-size:1.9rem;font-weight:800;color:var(--bleu)}
+  .kpi .l{color:var(--muted);font-size:.9rem}
+  h2{color:var(--bleu);margin:24px 0 10px;border-bottom:3px solid var(--bleu2);display:inline-block;padding-bottom:3px}
+  .alerte{border-radius:10px;padding:11px 15px;border:1px solid var(--line);background:var(--card);margin-bottom:9px}
+  .alerte.rouge{background:#fdeeec;border-color:#e6b0aa}
+  .alerte.orange{background:var(--ambre);border-color:#ecd3a0}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card h3{margin:0 0 2px;color:var(--bleu)}
+  .card .sub{color:var(--muted);font-size:.9rem;margin:0 0 8px}
+  .card dl{margin:0;font-size:.94rem}
+  .card dt{font-weight:700;margin-top:7px}
+  .card dd{margin:0}
+  .bar{height:10px;background:#e6edf2;border-radius:5px;overflow:hidden;margin-top:4px}
+  .bar>div{height:100%}
+  .chip{display:inline-block;font-size:.78rem;font-weight:700;color:#fff;border-radius:20px;padding:2px 10px}
+  table{width:100%;border-collapse:collapse;font-size:.92rem}
+  td,th{padding:6px 7px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  .mini{font-size:.85rem;color:var(--muted)}
+  .admin{display:none;background:#fffbe9;border:1.5px dashed var(--orange);border-radius:12px;padding:16px;margin:16px 0}
+  body.edit .admin{display:block}
+  .admin h3{margin-top:0;color:#8a5200}
+  .admin label{display:block;font-weight:600;font-size:.9rem;margin:8px 0 3px}
+  .admin input,.admin select,.admin textarea{width:100%;padding:8px;border:1px solid var(--line);border-radius:7px;font-size:.95rem}
+  .admin .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:640px){.admin .row{grid-template-columns:1fr}}
+  .del{color:var(--rouge);cursor:pointer;font-weight:700;border:0;background:none}
+  footer{color:var(--muted);font-size:.88rem;padding:26px 0 40px}
+</style>
+</head>
+<body>
+<!-- Révision du 25 octobre 2026 : informations institutionnelles alignées sur le site officiel du Ministère (https://www.maepe-rh.dj) — Ministre : M. Radwan Abdillahi Bahdon ; feuille de route : Vision Djibouti 2035 / SCAPE / PNIASAN. Données projets : Rapport annuel 2025. -->
+<header>
+  <div class="wrap">
+    <p class="rep">République de Djibouti — Unité · Travail · Progrès</p>
+    <h1>Plateforme de suivi du MAEPE-RH — Vue globale du Ministère</h1>
+    <p class="min">Ministère de l'Agriculture, de l'Eau, de la Pêche, de l'Élevage et des Ressources Halieutiques · Ministre : <strong>M. Radwan Abdillahi Bahdon</strong> · « Cultiver, nourrir et préserver l'eau de la Nation » <span style="opacity:.85">(site officiel du Ministère)</span></p>
+    <p class="min">Projets, directions techniques, activités régaliennes et plans d'action · Consolidation : Bureau de Gestion de Projets (BGP)</p>
+  </div>
+</header>
+<div class="demo">DÉMONSTRATION réalisée à titre personnel — outil NON officiel, non adopté ni validé par le Ministère · Données publiques : Rapport annuel 2025 et site officiel maepe-rh.dj</div>
+
+<div class="wrap">
+  <div class="toolbar">
+    <button id="btnEdit" onclick="toggleEdit()">✏️ Mode alimentation (consultant / BGP)</button>
+    <button class="alt" onclick="exporter()">⬇️ Exporter les données (JSON)</button>
+    <button class="alt" onclick="document.getElementById('importFile').click()">⬆️ Importer</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importer(event)">
+    <button class="alt" onclick="window.print()">🖨️ Imprimer la vue Ministre</button>
+    <button onclick="genererRapport()">📄 Générer le rapport annuel automatique</button>
+    <select id="selTrim" style="padding:9px;border:1px solid var(--bleu);border-radius:8px;font-weight:600;color:var(--bleu)">
+      <option value="1">Trimestre 1</option><option value="2">Trimestre 2</option>
+      <option value="3">Trimestre 3</option><option value="4" selected>Trimestre 4</option>
+    </select>
+    <button onclick="genererTrimestriel()">📊 Rapport trimestriel</button>
+  </div>
+  <p class="mini">Fonctionnement : les coordonnateurs de projets et les directions transmettent leurs rapports et plans d'action ; le tableau de bord est alimenté et consolidé ici (données conservées dans ce navigateur — exporter le JSON pour sauvegarder/partager). État initial : données publiques du Rapport annuel 2025.</p>
+
+  <div class="kpis" id="kpis"></div>
+
+  <h2>🚨 Alertes du portefeuille</h2>
+  <div id="alertes"></div>
+
+  <h2>🏛️ Vue globale du Ministère</h2>
+  <p class="mini">Toutes les structures du MAEPE-RH : coordination, directions techniques, société sous tutelle et relais régionaux — chacune avec ses missions et ses faits marquants 2025 (Rapport annuel). Selon la présentation du <a href="https://www.maepe-rh.dj/" target="_blank" rel="noopener">site officiel du Ministère</a>, celui-ci compte 4 directions techniques, 6 domaines d'intervention et 5 organismes sous tutelle, avec une couverture nationale de 100 %.</p>
+  <div class="grid" id="entites"></div>
+
+  <h2>🌐 Le Ministère sur son site officiel — maepe-rh.dj</h2>
+  <div class="card" style="margin-bottom:20px">
+    <dl>
+      <dt>Ministre</dt><dd><strong>M. Radwan Abdillahi Bahdon</strong>, Ministre de l'Agriculture, de l'Eau, de la Pêche, de l'Élevage et des Ressources Halieutiques. Devise du Ministère : « Cultiver, nourrir et préserver l'eau de la Nation ». <a href="https://www.maepe-rh.dj/mot-du-ministre" target="_blank" rel="noopener">Mot du Ministre (site officiel)</a></dd>
+      <dt>Missions (site officiel)</dt><dd>Le Ministère met en œuvre les politiques de sécurité alimentaire, de développement rural et de l'eau : production agricole, animale et halieutique, gestion des ressources hydrauliques et assainissement.</dd>
+      <dt>Feuille de route (site officiel)</dt><dd>6 axes stratégiques : souveraineté et sécurité alimentaire ; gestion durable de l'eau ; économie bleue et pêche ; élevage résilient et santé animale ; agriculture et couvert végétal ; développement rural durable. Cadres de référence : <strong>Vision Djibouti 2035</strong>, stratégie nationale <strong>SCAPE</strong>, stratégie sectorielle <strong>PNIASAN 2016-2020</strong> et chaîne <strong>PPBSE</strong> (Planification, Programmation, Budgétisation, Suivi et Évaluation). <a href="https://www.maepe-rh.dj/strategie" target="_blank" rel="noopener">Feuille de route (site officiel)</a></dd>
+      <dt>Programmes &amp; projets (site officiel)</dt><dd>Le site officiel présente les « programmes phares » du Ministère pour la sécurité alimentaire, l'eau et le développement rural durable : <a href="https://www.maepe-rh.dj/programmes" target="_blank" rel="noopener">voir tous les programmes sur maepe-rh.dj</a>. Le portefeuille détaillé ci-contre reste celui du Rapport annuel 2025.</dd>
+      <dt>Actualités — site officiel</dt><dd>Aucune actualité datée n'a pu être relevée sur le site officiel lors de la révision du 25 octobre 2026 ; les informations et annonces du Ministère sont à consulter directement sur <a href="https://www.maepe-rh.dj/" target="_blank" rel="noopener">maepe-rh.dj</a>.</dd>
+      <dt>Coordonnées officielles</dt><dd>Zone Industrielle Sud, Djibouti (BP 453) · Tél. (253) 21 35 12 97 · Fax (253) 35 31 78 · contact@maepe-rh.dj · Horaires : dimanche – jeudi, 7 h 30 – 14 h 00.</dd>
+    </dl>
+    <p class="mini" style="margin-bottom:0">Section ajoutée lors de la révision du 25 octobre 2026 — sources : pages officielles du site maepe-rh.dj (accueil, mot du Ministre, feuille de route/stratégie), consultées le 25 octobre 2026.</p>
+  </div>
+
+  <h2>📁 Projets en cours</h2>
+  <div class="grid" id="projets"></div>
+
+  <h2>📈 Comparaison des 3 volets — physique / décaissement / engagement</h2>
+  <p class="mini">Lecture directe des anomalies : un projet sain voit ses trois barres progresser ensemble. Un engagement très supérieur au décaissement (cas du FAR : 105 % contre 45 %) ou un décaissement sans avancement physique signale un point de vigilance.</p>
+  <div class="card" id="comparatif" style="margin-bottom:20px"></div>
+
+  <h2>🗺️ Carte de Djibouti — zones d'intervention des projets</h2>
+  <div class="card" style="margin-bottom:20px">
+    <div id="carteDjibouti" style="height:430px;border-radius:10px;z-index:0"></div>
+    <p class="mini">Fond de carte OpenStreetMap. Marqueurs par région : cliquez sur un point pour voir les projets présents et leurs principaux sites. La taille du point reflète le nombre de projets actifs dans la région.</p>
+  </div>
+
+  <h2>🧭 Zones d'intervention des projets — qui intervient où</h2>
+  <p class="mini">Couverture du territoire par les projets, à partir des zones et sites documentés dans le Rapport annuel 2025.</p>
+  <div class="grid" style="margin-bottom:16px">
+    <div class="card"><h3>BREFONS</h3><dl>
+      <dt>Tadjourah</dt><dd>Forages de Doka-Af et Garba Naba ; périmètres irrigués de Ripta, Terdo et Daimoli</dd>
+      <dt>Obock</dt><dd>Forage de Souwali/Abramali ; réseau d'eau potable du village de Karta</dd>
+      <dt>Ali Sabieh</dt><dd>Mini-système d'eau potable de Holl-Holl (réceptionné en 2025)</dd>
+      <dt>Djibouti-ville</dt><dd>Périmètres irrigués d'Ambouli (50 jardins)</dd></dl></div>
+    <div class="card"><h3>PEJACC</h3><dl>
+      <dt>Djibouti-ville</dt><dd>Marchés communautaires de Quartier 6 et d'Ambouli</dd>
+      <dt>Tadjourah et Dikhil</dt><dd>2 cliniques mobiles ; périmètres irrigués à réhabiliter</dd>
+      <dt>Dorra et Gallafi</dt><dd>Forages — transition solaire de 10 sites stratégiques</dd></dl></div>
+    <div class="card"><h3>DRIVE</h3><dl>
+      <dt>Corridor Djibouti–Éthiopie</dt><dd>Certificat de quarantaine numérisé entre Mile et Jijiga (Éthiopie) et le port de Doraleh</dd>
+      <dt>Infrastructures nationales</dt><dd>Abattoir, station de quarantaine, laboratoire national, services de la DESV</dd></dl></div>
+    <div class="card"><h3>PGIRE</h3><dl>
+      <dt>13 bassins versants</dt><dd>Obock : 2 · Tadjourah : 5 · Dikhil : 6</dd>
+      <dt>47 localités</dt><dd>10 à Obock, 23 à Tadjourah, 14 à Dikhil</dd>
+      <dt>Population cible</dt><dd>11 532 ménages — 80 724 bénéficiaires</dd></dl></div>
+    <div class="card"><h3>FAR</h3><dl>
+      <dt>Plaine de Hanlé</dt><dd>Palmier dattier (préfaisabilité PPP au PTBA 2026)</dd>
+      <dt>Barrage de l'Amitié</dt><dd>Zone d'irrigation (préfaisabilité PPP au PTBA 2026)</dd>
+      <dt>Pôles de croissance</dt><dd>Filières fruits et légumes, petits ruminants, œufs, fourrage ; formations à Djibouti-ville et dans les 5 régions</dd></dl></div>
+    <div class="card"><h3>DRESS-EA</h3><dl>
+      <dt>Ali Sabieh</dt><dd>Station agrométéorologique de Goubetto ; lignes de crédit</dd>
+      <dt>Dikhil</dt><dd>Stations d'As Eyla et de Yoboki ; retenues d'Abou-Youssouf et de Behidleh ; lignes de crédit</dd>
+      <dt>Échelle régionale (IGAD)</dt><dd>Programme commun avec le Kenya, le Soudan et l'Ouganda (alerte précoce)</dd></dl></div>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <p style="margin-top:0"><strong>Synthèse par région</strong></p>
+    <table>
+      <tr><th>Région</th><th>Projets présents</th></tr>
+      <tr><td><strong>Obock</strong></td><td>BREFONS · PGIRE</td></tr>
+      <tr><td><strong>Tadjourah</strong></td><td>BREFONS · PEJACC · PGIRE</td></tr>
+      <tr><td><strong>Dikhil</strong></td><td>PGIRE · PEJACC · FAR · DRESS-EA</td></tr>
+      <tr><td><strong>Ali Sabieh</strong></td><td>BREFONS · DRESS-EA</td></tr>
+      <tr><td><strong>Djibouti-ville</strong></td><td>BREFONS · PEJACC · DRIVE</td></tr>
+      <tr><td><strong>Arta</strong></td><td>BREFONS (dossiers de sous-projets CPEC en évaluation)</td></tr>
+    </table>
+  </div>
+
+  <h2>🧭 Pipeline</h2>
+  <div class="grid" id="pipeline"></div>
+
+  <h2>🏛️ Directions — activités régaliennes &amp; plans d'action</h2>
+  <p class="mini">Pour chaque département : (1) un <strong>tableau de suivi des activités régaliennes</strong> — les missions permanentes du service public (indicateur, réalisation, taux) ; (2) son <strong>plan d'action</strong> — les activités de développement suivies (échéance, responsable, taux de réalisation). Les lignes « à alimenter » seront complétées à partir des éléments transmis par la direction.</p>
+  <div class="grid" id="directions"></div>
+
+  <div class="admin" id="adminPanneau">
+    <h3>✏️ Alimentation du tableau de bord</h3>
+    <p class="mini">Sélectionnez un projet pour mettre à jour ses chiffres (décaissement, avancement, statut, alerte), ou ajoutez une action au plan d'une direction via le formulaire dans sa carte. Tout est enregistré automatiquement dans ce navigateur.</p>
+    <label for="selProjet">Projet à mettre à jour</label>
+    <select id="selProjet"></select>
+    <div class="row">
+      <div><label for="fDec">Taux de décaissement (%) — laisser vide si inconnu</label><input id="fDec" type="number" min="0" max="130" step="any"></div>
+      <div><label for="fPhy">Avancement physique (%) — laisser vide si inconnu</label><input id="fPhy" type="number" min="0" max="100" step="any"></div>
+    </div>
+    <label for="fEng">Taux d'engagement (%) — laisser vide si inconnu</label>
+    <input id="fEng" type="number" min="0" max="150" step="any">
+    <label for="fStatut">Statut</label>
+    <select id="fStatut">
+      <option>En cours</option><option>Résultats solides</option><option>Vigilance délais</option>
+      <option>Écart financier</option><option>Alerte démarrage</option><option>En préparation</option><option>Clôturé</option>
+    </select>
+    <label for="fNote">Note d'avancement (affichée sur la fiche)</label>
+    <textarea id="fNote" rows="2"></textarea>
+    <label for="fPersp">Perspectives (année suivante — utilisées dans le rapport annuel automatique)</label>
+    <textarea id="fPersp" rows="2"></textarea>
+    <label for="fAlerte">Alerte (laisser vide = aucune alerte)</label>
+    <textarea id="fAlerte" rows="2"></textarea>
+    <label for="fNiv">Niveau d'alerte</label>
+    <select id="fNiv"><option value="rouge">🔴 Critique</option><option value="orange">🟠 Vigilance</option></select>
+    <button class="btn" style="margin-top:12px" onclick="majProjet()">Enregistrer la mise à jour du projet</button>
+    <hr style="margin:18px 0;border:none;border-top:1px solid var(--line)">
+    <button class="btn" style="background:var(--rouge)" onclick="reinitialiser()">♻️ Réinitialiser aux données du Rapport annuel 2025</button>
+  </div>
+
+  <div id="rapportZone" style="display:none">
+    <h2>📄 Rapports générés automatiquement</h2>
+    <div class="card" id="rapportContenu" style="white-space:pre-wrap;font-size:.97rem"></div>
+    <div class="toolbar"><button class="alt" onclick="telechargerRapport()">⬇️ Télécharger le rapport (.txt)</button></div>
+  </div>
+
+  <footer>Prototype de démonstration réalisé à titre personnel — outil non officiel, non adopté ni validé par le Ministère. Données initiales : Rapport annuel 2025 du MAEPE-RH (données publiques, reproduites telles quelles) ; informations institutionnelles alignées sur le site officiel <a href="https://www.maepe-rh.dj/" target="_blank" rel="noopener">maepe-rh.dj</a> (révision du 25 octobre 2026). La version opérationnelle sera interne, à accès contrôlé, et alimentée par les coordonnateurs de projets et les directions sous la consolidation du BGP.</footer>
+</div>
+
+<script>
+var SEED = {
+projets:[
+ {sigle:"BREFONS",nom:"Résilience face à l'insécurité alimentaire et nutritionnelle — Corne de l'Afrique",bailleur:"Banque Africaine de Développement — Prêt FAD de 13 930 000 UC",dec:36.72,phy:null,statut:"Vigilance délais",zones:"Tadjourah, Obock, Ali Sabieh, Djibouti-ville",note:"Forages : 90 % (délai consommé 104 %) · AEP Karta : 45 % · Mini-AEP Holl-Holl réceptionnée le 11 sept. 2025 · Périmètres irrigués : Ambouli 45 %, Tadjourah 89 % · Décaissé : 5 114 634 UC",alerte:"Délais consommés supérieurs à l'avancement (forages : 104 % du délai pour 90 %) ; 1 forage non exploitable à Doka-Af.",niv:"orange"},
+ {sigle:"PEJACC",nom:"Entrepreneuriat des jeunes pour l'adaptation au changement climatique",bailleur:"BAD (dons FAD, FAT, CAW) et prêt FIDA — enveloppe ≈ 31,9 millions UC (montants du rapport)",dec:2.22,phy:null,statut:"Alerte démarrage",zones:"Djibouti-ville (Q6, Ambouli), Tadjourah, Dikhil, Dorra, Gallafi",note:"Phase de démarrage : marché Q6 signé (avenant en attente), Ambouli en signature, périmètres non démarrés. Décaissé : 155 392 UC",alerte:"Démarrage critique : décaissement de 2,22 % seulement ; recrutement de l'assistant en suivi-évaluation infructueux (relance en cours).",niv:"rouge"},
+ {sigle:"DRIVE",nom:"Réduction des risques, inclusion et valorisation des économies pastorales (régional)",bailleur:"Assurance souveraine sécheresse (produit ARC via ZEP-RE) ; CEP au MAEPE-RH (bailleur non précisé au rapport)",dec:null,phy:null,statut:"En cours",zones:"Corridor bétail Djibouti–Éthiopie ; infrastructures nationales d'élevage",note:"Diagnostic des infrastructures d'élevage en cours · Certificat de quarantaine numérisé (cahier des charges finalisé) · Facilité d'investissement lancée (appel clôturé le 30 oct. 2025) · 2026 : police climat 800 000 USD",alerte:"",niv:"orange"},
+ {sigle:"PGIRE",nom:"Gestion intégrée des ressources en eau (depuis juin 2021)",bailleur:"FIDA — 14,54 M USD + financement additionnel FIDA 12 de 6,3 M USD",dec:null,phy:null,statut:"Résultats solides",zones:"13 bassins versants : Obock, Tadjourah, Dikhil · 47 localités · 80 724 bénéficiaires",note:"12 citernes de 100 m³ achevées (100 % de la cible) · 2 puits réhabilités (400 ménages) · 26 comités de gestion (CGEP) · Mise en repos 255 ha (100 %)",alerte:"",niv:"orange"},
+ {sigle:"FAR",nom:"Appui aux filières agricoles résilientes (en vigueur le 8 juillet 2024 — 5 ans)",bailleur:"Banque mondiale",dec:45,phy:86.96,statut:"Écart financier",zones:"Pôles de croissance : plaine de Hanlé, Barrage de l'Amitié ; filières fruits/légumes, petits ruminants, œufs, fourrage",note:"PTBA 2025 : 60 actions réalisées sur 69 · Engagement 105 % (3 944 213) contre décaissement 45 % (1 699 364 / 3 750 000) · PTBA 2026 : 6 316 000 USD (13 forages solaires, 3 préfaisabilités PPP)",alerte:"Décalage physique/financier : 105 % d'engagement pour 45 % de décaissement ; 3 actions critiques non démarrées (études géophysiques, préfaisabilités PPP).",niv:"orange"},
+ {sigle:"DRESS-EA",nom:"Résilience à la sécheresse des petits exploitants et pasteurs — région IGAD (4 pays)",bailleur:"Enveloppe de 2 406 480 $ (part de Djibouti non distinguée au rapport)",dec:null,phy:null,statut:"En cours",zones:"Ali Sabieh, Dikhil + réseau régional d'alerte précoce",note:"3 stations agrométéorologiques installées (Goubetto, As Eyla, Yoboki) · 2 retenues réalisées · Projet de loi sécheresse élaboré · Ligne de crédit de 299 000 USD (7 coopératives, 18 caisses mutuelles)",alerte:"",niv:"orange"}
+],
+pipeline:[
+ {t:"DJIRESA — nouveau projet de ressources en eau",d:"En préparation (réunion de travail DHR, 2025). Futur projet structurant du secteur de l'eau."},
+ {t:"Table ronde des bailleurs — agribusiness",d:"90 M USD annoncés disponibles pour l'agriculture ; ambition de mobilisation de 250–300 M USD."},
+ {t:"Palmier dattier — plaine de Hanlé",d:"Projet gouvernemental (200 ha puis 1 000 ha) ; appui PNUD annoncé de 5 à 13 M USD ; préfaisabilité PPP au PTBA 2026 du FAR."},
+ {t:"Abattoir aux normes internationales (PPP)",d:"Études de faisabilité via DRIVE ; opérateur privé recherché."},
+ {t:"Ferme aquicole pilote & centre phoenicicole",d:"BREFONS/BAD : EIES en revue à la Banque, DAO pour avis de non-objection ; travaux programmés en 2026."},
+ {t:"Conventions DHR — FAR / BREFONS / Environnement",d:"En phase finale de finalisation (la convention PGIRE–DHR est déjà opérationnelle)."}
+],
+directions:[
+ {sigle:"DHR",nom:"Direction de l'Hydraulique Rurale",mission:"Coordination sectorielle de l'eau rurale et « chapeautage » des projets hydrauliques",actions:[
+   {a:"Superviser la réhabilitation lourde de 17 forages stratégiques (PURSCA)",e:"2025–2026",r:"DHR / projet",p:null},
+   {a:"Finaliser les conventions avec FAR, BREFONS et le Ministère de l'Environnement",e:"T1 2026",r:"DHR",p:null},
+   {a:"Suivre la convention PGIRE–DHR (bases régionales, AEP de 4 localités)",e:"En continu",r:"DHR / PGIRE",p:null}]},
+ {sigle:"DGT",nom:"Direction des Grands Travaux",mission:"Grands ouvrages hydrauliques et infrastructures rurales",actions:[
+   {a:"Barrage de l'Amitié — suivi des travaux et de la mobilisation des eaux de surface",e:"2026",r:"DGT",p:null},
+   {a:"Réhabilitation des pistes rurales",e:"2026",r:"DGT",p:null}]},
+ {sigle:"DAF",nom:"Direction de l'Agriculture et des Forêts",mission:"Production agricole, forêts et statistiques agricoles",actions:[
+   {a:"Projet SSG Fourrages : multiplication et diffusion des souches fourragères",e:"2025–2026",r:"DAF",p:null},
+   {a:"Production des statistiques agricoles annuelles",e:"Annuel",r:"DAF",p:null}]},
+ {sigle:"DESV",nom:"Direction de l'Élevage et des Services Vétérinaires",mission:"Santé et production animales, contrôle alimentaire et vétérinaire",actions:[
+   {a:"Campagnes de vaccination contre la PPR (2e campagne réalisée en 2025)",e:"Campagnes annuelles",r:"DESV",p:null},
+   {a:"Séro-surveillance et validation des vaccins",e:"En continu",r:"DESV",p:null}]},
+ {sigle:"DP",nom:"Direction de la Pêche",mission:"Développement de la pêche et des ressources halieutiques",actions:[
+   {a:"Plan d'action 2026 — à alimenter par la Direction",e:"—",r:"DP",p:null}]},
+ {sigle:"SDSA",nom:"Société Djiboutienne de Sécurité Alimentaire",mission:"Semences et plants sylvicoles, ferme expérimentale de Damerjog, appui aux éleveurs",actions:[
+   {a:"Convention BAD : production de 200 000 plants sylvicoles, plantation de 5 000 plants (capitale)",e:"À partir de 2026",r:"SDSA / BREFONS-PEJACC",p:null},
+   {a:"Convention BAD : formation annuelle de 15 à 20 agriculteurs (Damerjog)",e:"Signature prévue en 2026",r:"SDSA",p:null}]},
+ {sigle:"SDR",nom:"Sous-directions régionales (Ali-Sabieh, Dikhil, Obock, Tadjourah, Arta)",mission:"Relais territoriaux du Ministère : remontée des données terrain et suivi des interventions régionales",actions:[
+   {a:"Plans d'action régionaux 2026 — à alimenter par chaque sous-direction",e:"—",r:"SDR",p:null}]}
+]
+};
+var ENTITES=[
+ {n:"Le Ministre — M. Radwan Abdillahi Bahdon",t:"Direction du Ministère (site officiel)",d:"Ministre de l'Agriculture, de l'Eau, de la Pêche, de l'Élevage et des Ressources Halieutiques. « La sécurité alimentaire, la valorisation de nos ressources et l'accès à l'eau sont les piliers d'un développement rural durable au service de la Nation. » Priorités affichées sur le site officiel : production animale ; contrôle vétérinaire et alimentaire ; production halieutique ; production végétale et couvert végétal ; étude et exploitation des ressources en eau (rural et urbain) ; ouvrages hydrauliques de surface et pistes d'accès ; politique de l'assainissement."},
+ {n:"Secrétariat Général",t:"Coordination",d:"Coordination des départements, de leurs programmes et projets ; suivi des plans annuels de travail, des programmes pluriannuels et de l'ensemble des projets du Ministère."},
+ {n:"Direction de l'Administration Générale (DAG)",t:"Direction centrale",d:"Administration générale du Ministère ; tutelle du Bureau de Gestion de Projets (BGP)."},
+ {n:"Bureau de Gestion de Projets (BGP)",t:"Suivi-évaluation",d:"Dispositif central de suivi-évaluation en cours d'opérationnalisation (mission d'appui en cours) ; objectif officiel : le pilotage efficace et en temps réel du portefeuille du Ministère."},
+ {n:"Direction de l'Agriculture et des Forêts (DAF)",t:"Direction technique",d:"Production agricole et statistiques agricoles ; lancement en 2025 du projet SSG Fourrages (multiplication et diffusion de souches fourragères)."},
+ {n:"Direction de l'Hydraulique Rurale (DHR)",t:"Direction technique",d:"Service public de l'eau rurale ; convention PGIRE–DHR opérationnelle, conventions FAR/BREFONS en finalisation ; réhabilitation de 17 forages stratégiques (PURSCA). Contraintes 2025 : carburant, Fonds National de l'Eau."},
+ {n:"Direction des Grands Travaux (DGT)",t:"Direction technique",d:"Grands ouvrages : Barrage de l'Amitié, mobilisation des eaux de surface ; réhabilitation des pistes rurales ; parc d'engins roulants."},
+ {n:"Direction de l'Élevage et des Services Vétérinaires (DESV)",t:"Direction technique",d:"Santé et production animales ; 2e campagne de vaccination contre la PPR réalisée en 2025 ; séro-surveillance ; contrôle alimentaire et vétérinaire."},
+ {n:"Direction de la Pêche (DP)",t:"Direction technique",d:"Statistiques halieutiques via OPEN ARTFISH (4 sites de débarquement, 8 énumérateurs) : captures 2025 estimées à 3 461,6 tonnes, valeur ≈ 1,64 milliard FDJ ; licences de pêche et réglementation."},
+ {n:"Société Djiboutienne de Sécurité Alimentaire (SDSA)",t:"Société sous tutelle",d:"Semences et plants sylvicoles, ferme expérimentale de Damerjog, distribution d'aliments de bétail ; conventions 2026 en préparation (200 000 plants ; formation des jeunes avec la BAD)."},
+ {n:"Sous-directions régionales — Ali-Sabieh, Dikhil, Obock, Tadjourah, Arta",t:"Relais territoriaux",d:"Représentation du Ministère dans les 5 régions ; rapports régionaux annuels (Dikhil : difficultés documentées par secteur — eau, matériels, carburant)."},
+ {n:"Organismes sous tutelle (présentation du site officiel)",t:"Établissements spécialisés",d:"Le site officiel présente 5 organismes sous tutelle dédiés à : l'eau et l'assainissement ; le contrôle alimentaire ; la filière pêche ; le contrôle sanitaire du bétail ; les stocks alimentaires stratégiques. Chaque région de l'intérieur dispose en outre d'un Plan de Développement Régional et d'une matrice d'actions prioritaires (MAP) déclinant la stratégie du Ministère au niveau territorial."}
+];
+var REGAL={
+"DHR":[{a:"Maintenance et dépannage des forages ruraux (service public de l'eau)",ind:"Interventions sur signalement des régions",real:"Contrainte majeure 2025 : pénurie récurrente de carburant et Fonds National de l'Eau non ravitaillé — la maintenance préventive est limitée",p:null},
+ {a:"Coordination sectorielle et « chapeautage » des projets d'eau (PGIRE, FAR, BREFONS)",ind:"Conventions suivies : 3",real:"Convention PGIRE signée et opérationnelle ; conventions FAR et BREFONS en phase finale de finalisation",p:null}],
+"DGT":[{a:"Ouvrages hydrauliques structurants (barrages, mobilisation des eaux de surface)",ind:"Ouvrages suivis, dont le Barrage de l'Amitié",real:"Suivi du Barrage de l'Amitié et des travaux de mobilisation des eaux de surface (rapport 2025)",p:null},
+ {a:"Entretien et réhabilitation des pistes rurales",ind:"Programme annuel de pistes",real:"Réhabilitation des pistes rurales — réalisations détaillées au rapport 2025",p:null},
+ {a:"Gestion et maintenance du parc d'engins roulants",ind:"Disponibilité du parc",real:"Parc d'engins suivi par la Direction (rapport 2025)",p:null}],
+"DAF":[{a:"Production des statistiques agricoles",ind:"Statistiques annuelles",real:"Statistiques agricoles 2025 produites et intégrées au rapport annuel",p:null},
+ {a:"Appui à la production agricole et à l'amélioration du couvert végétal",ind:"Campagne agricole annuelle",real:"Suivi de la campagne agricole et des productions (rapport 2025)",p:null}],
+"DESV":[{a:"Campagnes nationales de vaccination du cheptel (PPR)",ind:"Campagne annuelle nationale",real:"2e campagne de vaccination contre la PPR réalisée en 2025 — résultats détaillés au rapport",p:null},
+ {a:"Séro-surveillance et validation des vaccins",ind:"Surveillance continue",real:"Activités de séro-surveillance réalisées en 2025",p:null},
+ {a:"Contrôle alimentaire et vétérinaire",ind:"Inspections et contrôles sanitaires",real:"Contrôles réalisés en 2025 ; contrainte signalée : moyens de fonctionnement dérisoires",p:null}],
+"DP":[{a:"Collecte des données de captures aux sites de débarquement (base OPEN ARTFISH)",ind:"Échantillonnage 5 j/sem. — 4 sites, 8 énumérateurs",real:"Captures 2025 : 3 461,6 tonnes pour ≈ 1 635 758 000 FDJ ; 77 % débarquées au Port de Djibouti",p:null},
+ {a:"Octroi des licences de pêche et application des textes réglementaires",ind:"Licences délivrées et contrôles",real:"Missions régaliennes assurées par la Direction (rapport 2025)",p:null}],
+"SDSA":[{a:"Récolte et conservation des semences sylvicoles ; production de plants sylvicoles et ornementaux",ind:"Production annuelle de plants",real:"Semences récoltées et conservées, plants produits en 2025 (rapport)",p:null},
+ {a:"Collecte et distribution des aliments de bétail aux éleveurs",ind:"Campagnes de distribution",real:"Distribution d'aliments de bétail réalisée en 2025 (rapport)",p:null},
+ {a:"Exploitation de la ferme expérimentale de Damerjog (maraîcher, fourrager)",ind:"Exploitation annuelle de la ferme",real:"Productions maraîchères et fourragères ; démontage d'un hectare en 2025 (rapport)",p:null}],
+"SDR":[{a:"Remontée des données régionales et suivi des interventions du Ministère en région",ind:"Rapports régionaux annuels",real:"Rapports des 5 sous-directions intégrés au rapport annuel 2025",p:null}]
+};
+var AOS={
+"BREFONS":[
+ {o:"Centre phoenicicole (dattier in vitro)",e:"DAO envoyé à la BAD pour avis de non-objection ; EIES en revue à la Banque"},
+ {o:"Ferme aquicole pilote (avec le programme TAAT)",e:"EIES en cours de revue (version 2) ; projet de contrat en préparation"},
+ {o:"Travaux de forages (3 sites : Doka-Af, Garba Naba, Souwali)",e:"Avenant n°01 en exécution — avancement 90 %, délai consommé 104 %"}],
+"PEJACC":[
+ {o:"Équipements solaires des forages",e:"DAO en cours de préparation"},
+ {o:"Marché communautaire de Quartier 6",e:"Contrat signé — démarrage conditionné à l'avis de la Banque sur le projet d'avenant"},
+ {o:"Marché communautaire d'Ambouli",e:"Contrat en cours de signature"},
+ {o:"Travaux des périmètres irrigués",e:"Recrutement des entreprises en cours — travaux non démarrés"},
+ {o:"Assistant en suivi-évaluation",e:"Recrutement infructueux — relance en cours"},
+ {o:"Audit financier 2025-2027 et étude de situation de référence (PEJACC / BREFOL)",e:"En recrutement"}],
+"DRIVE":[
+ {o:"Diagnostic des infrastructures marchandes et publiques de l'élevage",e:"En cours — livrables soumis, DAOA manquant"},
+ {o:"Cabinet juriste et vétérinaire (révision de la législation de l'élevage)",e:"Recrutement finalisé"}],
+"PGIRE":[
+ {o:"Enquête à mi-parcours du projet",e:"Prévue avant fin 2026 — recrutement à lancer"}],
+"FAR":[
+ {o:"Bureau d'études géophysiques (sous-composante 1.1)",e:"Non démarré — action critique"},
+ {o:"Études de préfaisabilité PPP (serres ; Barrage de l'Amitié ; dattier de Hanlé)",e:"Non démarrées — reportées au PTBA 2026"},
+ {o:"Consultant Senior du Fonds à Coûts Partagés",e:"TDR transmis à la Banque mondiale le 23 déc. 2025 pour non-objection"},
+ {o:"Équipement solaire de 13 forages (6 lots)",e:"Recrutement prévu au PTBA 2026"}],
+"DRESS-EA":[
+ {o:"Lignes de crédit — coopératives et caisses mutuelles (Ali Sabieh, Dikhil)",e:"MoU tripartite signé en décembre — déploiement en cours"}]
+};
+var PLANIF={
+"DHR":[{a:"Finaliser et signer les conventions avec FAR et BREFONS",t:"T1",r:"DHR",s:"En cours",p:null},
+ {a:"Suivi des chantiers de réhabilitation des 17 forages stratégiques (PURSCA)",t:"T2",r:"DHR / PURSCA",s:"Planifiée",p:null}],
+"DGT":[{a:"Suivi des travaux du Barrage de l'Amitié et de la mobilisation des eaux de surface",t:"T1",r:"DGT",s:"En cours",p:null},
+ {a:"Campagne de réhabilitation des pistes rurales",t:"T2",r:"DGT",s:"Planifiée",p:null}],
+"DAF":[{a:"Diffusion des souches fourragères et formation des multiplicateurs (SSG Fourrages)",t:"T1",r:"DAF",s:"En cours",p:null},
+ {a:"Production et diffusion des statistiques agricoles",t:"T4",r:"DAF",s:"Planifiée",p:null}],
+"DESV":[{a:"Préparation de la campagne de vaccination contre la PPR",t:"T1",r:"DESV",s:"Planifiée",p:null},
+ {a:"Exécution de la campagne de vaccination PPR",t:"T2",r:"DESV",s:"Planifiée",p:null},
+ {a:"Tournée de séro-surveillance dans les régions",t:"T3",r:"DESV",s:"Planifiée",p:null}],
+"DP":[{a:"Collecte continue des données de captures aux 4 sites de débarquement (OPEN ARTFISH)",t:"T1",r:"DP",s:"En cours",p:null},
+ {a:"Campagne de délivrance des licences de pêche",t:"T2",r:"DP",s:"Planifiée",p:null}],
+"SDSA":[{a:"Signature de la convention BAD — formation des jeunes agriculteurs (Damerjog)",t:"T1",r:"SDSA",s:"Planifiée",p:null},
+ {a:"Démarrage de la production de 200 000 plants sylvicoles (convention BREFONS)",t:"T2",r:"SDSA",s:"Planifiée",p:null}],
+"SDR":[{a:"Transmission des plans d'action régionaux au BGP",t:"T1",r:"Sous-directions régionales",s:"Planifiée",p:null},
+ {a:"Remontée des données terrain du semestre",t:"T2",r:"Sous-directions régionales",s:"Planifiée",p:null}]
+};
+var PERSP = {
+"BREFONS":"Programmation 2026 (au 31 mars) : périmètres irrigués 1 344 629 UC ; réseaux d'eau potable 1 411 907 UC ; pistes rurales 30 km 1 200 000 UC ; ferme aquicole pilote 734 360 UC ; centre phoenicicole 542 300 UC ; marchés communautaires 460 000 UC ; études et contrôle des travaux 654 962 UC.",
+"PEJACC":"Perspectives 2026 : réhabilitation de périmètres irrigués 5 298 430 UC ; marchés Q6 (1 366 236 UC) et Ambouli (1 110 068 UC) ; équipement solaire des forages 797 257 UC ; démarrage effectif des travaux et relance du recrutement suivi-évaluation.",
+"DRIVE":"Perspectives 2026 : police d'assurance climat 800 000 USD ; équipements des infrastructures d'élevage 250 000 USD ; facilitation commerciale du bétail Djibouti–Éthiopie 380 000 USD ; plateforme régionale d'échanges du bétail 35 000 USD.",
+"PGIRE":"Perspectives 2026 : 1 retenue neuve et 3 réhabilitées ; 6 forages réhabilités ; 1 forage neuf à Medeho (Obock) ; 2 puits de surface et AEP associés ; rattrapage de la mise en repos (objectif global 3 455 ha) ; enquête à mi-parcours avant fin 2026.",
+"FAR":"PTBA 2026 : 6 316 000 USD — 13 forages à pompage solaire ; 3 études de préfaisabilité PPP (serres de production, zone d'irrigation du Barrage de l'Amitié, palmier dattier de Hanlé) ; objectif de 3 conventions avec les banques commerciales pour le Fonds à Coûts Partagés.",
+"DRESS-EA":"Perspectives : exploitation des données horaires des 3 stations agrométéorologiques dans le système d'alerte précoce ; déploiement des lignes de crédit des 7 coopératives et 18 caisses mutuelles (Ali Sabieh, Dikhil)."
+};
+function charger(){
+  var d=null;
+  try{var s=localStorage.getItem('maepe_dashboard_v2'); if(s){d=JSON.parse(s);}}catch(e){}
+  if(!d){d=JSON.parse(JSON.stringify(SEED));}
+  d.projets.forEach(function(p){ if(!p.persp){p.persp=PERSP[p.sigle]||'';} if(!p.aos){p.aos=JSON.parse(JSON.stringify(AOS[p.sigle]||[]));} if(p.eng===undefined){p.eng=(p.sigle==='FAR')?105:null;} });
+  d.directions.forEach(function(dr){ if(!dr.regaliennes){dr.regaliennes=JSON.parse(JSON.stringify(REGAL[dr.sigle]||[]));} if(!dr.planif){dr.planif=JSON.parse(JSON.stringify(PLANIF[dr.sigle]||[]));} });
+  return d;
+}
+var DATA=charger();
+function sauver(){DATA.maj=new Date().toISOString();try{localStorage.setItem('maepe_dashboard_v2',JSON.stringify(DATA));}catch(e){}}
+function couleurStatut(s){
+  if(s==='Alerte démarrage')return 'var(--rouge)';
+  if(s==='Vigilance délais'||s==='Écart financier')return 'var(--orange)';
+  if(s==='Résultats solides')return 'var(--vert)';
+  return 'var(--bleu2)';
+}
+function barre(val,couleur){if(val===null||val===undefined)return '';return '<div class="bar"><div style="width:'+Math.min(100,val)+'%;background:'+couleur+'"></div></div>';}
+function rendre(){
+  // KPIs
+  var enCours=DATA.projets.length;
+  var alertes=DATA.projets.filter(function(p){return p.alerte;});
+  var rouges=alertes.filter(function(p){return p.niv==='rouge';}).length;
+  var decs=DATA.projets.filter(function(p){return p.dec!==null;});
+  var moyDec=decs.length? (decs.reduce(function(t,p){return t+p.dec;},0)/decs.length).toFixed(1) : '—';
+  var nbAO=DATA.projets.reduce(function(t,p){return t+((p.aos||[]).length);},0);
+  document.getElementById('kpis').innerHTML=
+    '<div class="kpi"><div class="n">'+enCours+'</div><div class="l">projets en cours suivis</div></div>'+
+    '<div class="kpi"><div class="n">'+DATA.pipeline.length+'</div><div class="l">initiatives en pipeline</div></div>'+
+    '<div class="kpi"><div class="n">'+nbAO+'</div><div class="l">appels d\'offres et recrutements en cours</div></div>'+
+    '<div class="kpi"><div class="n">'+moyDec+(decs.length?' %':'')+'</div><div class="l">décaissement moyen ('+decs.length+' projets renseignés)</div></div>'+
+    '<div class="kpi"><div class="n" style="color:'+(rouges?'var(--rouge)':'var(--orange)')+'">'+alertes.length+'</div><div class="l">alerte(s) active(s), dont '+rouges+' critique(s)</div></div>';
+  // Alertes
+  document.getElementById('alertes').innerHTML=alertes.length? alertes.map(function(p){
+    return '<div class="alerte '+p.niv+'">'+(p.niv==='rouge'?'🔴':'🟠')+' <strong>'+p.sigle+' — </strong>&nbsp;'+p.alerte+'</div>';
+  }).join('') : '<div class="alerte">✅ Aucune alerte active.</div>';
+  // Projets : 3 volets (physique, décaissement, engagement) + appels d'offres en cours
+  document.getElementById('projets').innerHTML=DATA.projets.map(function(p,pi){
+    function volet(lbl,val,c){ if(val===null||val===undefined){return '<dt>'+lbl+'</dt><dd>Non renseigné</dd>';} return '<dt>'+lbl+'</dt><dd><strong>'+val+' %</strong>'+barre(val,c)+'</dd>'; }
+    var editP=document.body.classList.contains('edit');
+    var aoLignes=(p.aos||[]).map(function(a,ai){
+      var del=editP? ' <button class="del" title="Supprimer" onclick="supAO('+pi+','+ai+')">✕</button>':'';
+      return '<tr><td>'+a.o+del+'</td><td>'+a.e+'</td></tr>';
+    }).join('');
+    var aoForm='<div class="admin" style="margin:10px 0 0"><label>Nouvel appel d\'offres / recrutement — '+p.sigle+'</label>'+
+      '<input id="ao-'+pi+'" placeholder="Objet (ex. DAO travaux de forages)">'+
+      '<input id="ae-'+pi+'" placeholder="Étape (préparation, publié, évaluation, ANO, signé...)">'+
+      '<button class="btn" style="margin-top:8px" onclick="ajAO('+pi+')">Ajouter</button></div>';
+    return '<div class="card"><h3>'+p.sigle+' <span class="chip" style="background:'+couleurStatut(p.statut)+'">'+p.statut+'</span></h3>'+
+      '<p class="sub">'+p.nom+'</p><dl><dt>Bailleur / enveloppe</dt><dd>'+p.bailleur+'</dd></dl>'+
+      '<p style="margin:8px 0 2px"><strong>📊 Les 3 volets du projet</strong></p><dl>'+
+      volet('Avancement physique',p.phy,'var(--vert)')+
+      volet('Décaissement',p.dec,'var(--bleu)')+
+      volet('Engagement',p.eng,'var(--orange)')+'</dl>'+
+      '<dl><dt>Zones</dt><dd>'+p.zones+'</dd><dt>Avancement (Rapport 2025 / mises à jour)</dt><dd>'+p.note+'</dd></dl>'+
+      '<p style="margin:10px 0 2px"><strong>📑 Appels d\'offres et recrutements en cours</strong></p>'+
+      '<table><tr><th>Objet</th><th>Étape</th></tr>'+(aoLignes||'<tr><td colspan="2">Aucun appel d\'offres en cours renseigné.</td></tr>')+'</table>'+aoForm+'</div>';
+  }).join('');
+  // Comparatif des 3 volets
+  document.getElementById('comparatif').innerHTML=DATA.projets.map(function(p){
+    function ligne(lbl,val,c){
+      if(val===null||val===undefined){return '<div style="display:flex;align-items:center;gap:8px;margin:3px 0"><span style="width:110px;font-size:.88rem">'+lbl+'</span><span class="mini">non renseigné</span></div>';}
+      return '<div style="display:flex;align-items:center;gap:8px;margin:3px 0"><span style="width:110px;font-size:.88rem">'+lbl+'</span><div style="flex:1" class="bar"><div style="width:'+Math.min(100,val)+'%;background:'+c+'"></div></div><strong style="width:52px;text-align:right">'+val+' %</strong></div>';
+    }
+    return '<div style="margin-bottom:14px"><strong>'+p.sigle+'</strong> <span class="mini">— '+p.statut+'</span>'+
+      ligne('Physique',p.phy,'var(--vert)')+ligne('Décaissement',p.dec,'var(--bleu)')+ligne('Engagement',p.eng,'var(--orange)')+'</div>';
+  }).join('')+'<p class="mini" id="majInfo"></p>';
+  var mi=document.getElementById('majInfo');
+  if(mi){mi.textContent=DATA.maj? ('Dernière mise à jour des données : '+new Date(DATA.maj).toLocaleString('fr-CA')+' — pensez à exporter le JSON pour sauvegarder.') : 'Données initiales : Rapport annuel 2025 (aucune mise à jour saisie pour le moment).';}
+  // Pipeline
+  document.getElementById('pipeline').innerHTML=DATA.pipeline.map(function(x){
+    return '<div class="card" style="border-style:dashed;border-color:var(--bleu2)"><h3 style="font-size:1.05rem">'+x.t+'</h3><p style="margin:0">'+x.d+'</p></div>';
+  }).join('');
+  // Vue globale — entités
+  document.getElementById('entites').innerHTML=ENTITES.map(function(e){
+    return '<div class="card"><h3 style="font-size:1.02rem">'+e.n+'</h3><p class="sub">'+e.t+'</p><p style="margin:0;font-size:.94rem">'+e.d+'</p></div>';
+  }).join('');
+  // Directions : activités régaliennes + plans d'action
+  document.getElementById('directions').innerHTML=DATA.directions.map(function(d,di){
+    var edit=document.body.classList.contains('edit');
+    var regLignes=(d.regaliennes||[]).map(function(g,gi){
+      var del=edit? ' <button class="del" title="Supprimer" onclick="supReg('+di+','+gi+')">✕</button>':'';
+      var pr=(g.p===null||g.p===undefined)?'—':g.p+' %';
+      return '<tr><td>'+g.a+del+'</td><td>'+g.ind+'</td><td>'+g.real+'</td><td><strong>'+pr+'</strong>'+((g.p!==null&&g.p!==undefined)?barre(g.p,'var(--bleu)'):'')+'</td></tr>';
+    }).join('');
+    var lignes=d.actions.map(function(a,ai){
+      var pr=(a.p===null||a.p===undefined)?'—':a.p+' %';
+      var del=edit? ' <button class="del" title="Supprimer" onclick="supAction('+di+','+ai+')">✕</button>':'';
+      return '<tr><td>'+a.a+del+'</td><td>'+a.e+'</td><td>'+a.r+'</td><td><strong>'+pr+'</strong>'+((a.p!==null&&a.p!==undefined)?barre(a.p,'var(--bleu2)'):'')+'</td></tr>';
+    }).join('');
+    var formReg='<div class="admin" style="margin:10px 0 0"><label>Nouvelle activité régalienne — '+d.sigle+'</label>'+
+      '<input id="ga-'+di+'" placeholder="Activité régalienne (mission permanente)">'+
+      '<div class="row"><div><input id="gi-'+di+'" placeholder="Indicateur / cible (ex. campagne annuelle)"></div>'+
+      '<div><input id="gp-'+di+'" type="number" min="0" max="100" placeholder="% réalisation (optionnel)"></div></div>'+
+      '<input id="gr-'+di+'" placeholder="Réalisation (texte)">'+
+      '<button class="btn" style="margin-top:8px" onclick="ajReg('+di+')">Ajouter l\'activité régalienne</button></div>';
+    var form='<div class="admin" style="margin:10px 0 0"><label>Nouvelle action du plan d\'action — '+d.sigle+'</label>'+
+      '<input id="na-'+di+'" placeholder="Intitulé de l\'action">'+
+      '<div class="row"><div><input id="ne-'+di+'" placeholder="Échéance (ex. T2 2026)"></div>'+
+      '<div><input id="nr-'+di+'" placeholder="Responsable"></div></div>'+
+      '<div class="row"><div><input id="np-'+di+'" type="number" min="0" max="100" placeholder="% réalisation (optionnel)"></div>'+
+      '<div><button class="btn" onclick="ajAction('+di+')">Ajouter l\'action</button></div></div></div>';
+    var planifLignes=(d.planif||[]).map(function(a,ai){
+      var delP=edit? ' <button class="del" title="Supprimer" onclick="supPlanif('+di+','+ai+')">✕</button>':'';
+      var prP=(a.p===null||a.p===undefined)?'—':a.p+' %';
+      var coulS=a.s==='Réalisée'?'var(--vert)':(a.s==='En retard'?'var(--rouge)':(a.s==='En cours'?'var(--orange)':'var(--muted)'));
+      return '<tr><td>'+a.a+delP+'</td><td><strong>'+a.t+'</strong></td><td>'+a.r+'</td><td><span class="chip" style="background:'+coulS+'">'+a.s+'</span></td><td><strong>'+prP+'</strong></td></tr>';
+    }).join('');
+    var formPlanif='<div class="admin" style="margin:10px 0 0"><label>Planifier une action trimestrielle — '+d.sigle+'</label>'+
+      '<input id="pa-'+di+'" placeholder="Action à suivre">'+
+      '<div class="row"><div><select id="pt-'+di+'"><option>T1</option><option>T2</option><option>T3</option><option>T4</option></select></div>'+
+      '<div><input id="pr-'+di+'" placeholder="Responsable"></div></div>'+
+      '<div class="row"><div><select id="ps-'+di+'"><option>Planifiée</option><option>En cours</option><option>Réalisée</option><option>En retard</option></select></div>'+
+      '<div><input id="pp-'+di+'" type="number" min="0" max="100" placeholder="% réalisation (optionnel)"></div></div>'+
+      '<button class="btn" style="margin-top:8px" onclick="ajPlanif('+di+')">Ajouter à la planification</button></div>';
+    var planifHtml='<p style="margin:14px 0 2px"><strong>🗓️ Planification trimestrielle — actions à suivre</strong></p>'+
+      '<table><tr><th>Action</th><th>Trim.</th><th>Resp.</th><th>Statut</th><th>Réal.</th></tr>'+(planifLignes||'<tr><td colspan="5">Aucune action planifiée pour le moment.</td></tr>')+'</table>'+formPlanif;
+    return '<div class="card"><h3>'+d.sigle+'</h3><p class="sub">'+d.nom+' — '+d.mission+'</p>'+
+      '<p style="margin:6px 0 2px"><strong>⚖️ Activités régaliennes — tableau de suivi</strong></p>'+
+      '<table><tr><th>Activité régalienne</th><th>Indicateur / cible</th><th>Réalisation</th><th>Taux</th></tr>'+regLignes+'</table>'+formReg+
+      '<p style="margin:14px 0 2px"><strong>🗂️ Plan d\'action</strong></p>'+
+      '<table><tr><th>Action</th><th>Échéance</th><th>Resp.</th><th>Réal.</th></tr>'+lignes+'</table>'+form+planifHtml+'</div>';
+  }).join('');
+  // Select projets admin
+  var sel=document.getElementById('selProjet');
+  var cur=sel.value;
+  sel.innerHTML=DATA.projets.map(function(p,i){return '<option value="'+i+'">'+p.sigle+'</option>';}).join('');
+  if(cur) sel.value=cur;
+}
+function toggleEdit(){
+  document.body.classList.toggle('edit');
+  document.getElementById('btnEdit').classList.toggle('on');
+  remplirForm();
+  rendre();
+}
+document.getElementById('selProjet').addEventListener('change',remplirForm);
+function remplirForm(){
+  var p=DATA.projets[parseInt(document.getElementById('selProjet').value||0)];
+  if(!p)return;
+  document.getElementById('fDec').value=(p.dec===null?'':p.dec);
+  document.getElementById('fPhy').value=(p.phy===null?'':p.phy);
+  document.getElementById('fEng').value=(p.eng===null||p.eng===undefined?'':p.eng);
+  document.getElementById('fStatut').value=p.statut;
+  document.getElementById('fNote').value=p.note;
+  document.getElementById('fPersp').value=p.persp||'';
+  document.getElementById('fAlerte').value=p.alerte;
+  document.getElementById('fNiv').value=p.niv;
+}
+function majProjet(){
+  var i=parseInt(document.getElementById('selProjet').value||0);
+  var p=DATA.projets[i];
+  var d=document.getElementById('fDec').value, ph=document.getElementById('fPhy').value;
+  p.dec=(d===''?null:parseFloat(d)); p.phy=(ph===''?null:parseFloat(ph));
+  var eg=document.getElementById('fEng').value; p.eng=(eg===''?null:parseFloat(eg));
+  p.statut=document.getElementById('fStatut').value;
+  p.note=document.getElementById('fNote').value;
+  p.persp=document.getElementById('fPersp').value;
+  p.alerte=document.getElementById('fAlerte').value;
+  p.niv=document.getElementById('fNiv').value;
+  sauver(); rendre();
+  alert('Fiche '+p.sigle+' mise à jour.');
+}
+function ajAction(di){
+  var a=document.getElementById('na-'+di).value.trim();
+  if(!a){alert('Saisissez l\'intitulé de l\'action.');return;}
+  var pv=document.getElementById('np-'+di).value;
+  DATA.directions[di].actions.push({a:a,e:document.getElementById('ne-'+di).value.trim()||'—',r:document.getElementById('nr-'+di).value.trim()||'—',p:(pv===''?null:parseFloat(pv))});
+  sauver(); rendre();
+}
+function supAction(di,ai){
+  if(!confirm('Supprimer cette action ?'))return;
+  DATA.directions[di].actions.splice(ai,1);
+  sauver(); rendre();
+}
+function ajPlanif(di){
+  var a=document.getElementById('pa-'+di).value.trim();
+  if(!a){alert('Saisissez l\u2019action à planifier.');return;}
+  var pv=document.getElementById('pp-'+di).value;
+  DATA.directions[di].planif.push({a:a,t:document.getElementById('pt-'+di).value,r:document.getElementById('pr-'+di).value.trim()||'—',s:document.getElementById('ps-'+di).value,p:(pv===''?null:parseFloat(pv))});
+  sauver(); rendre();
+}
+function supPlanif(di,ai){
+  if(!confirm('Supprimer cette action planifiée ?'))return;
+  DATA.directions[di].planif.splice(ai,1);
+  sauver(); rendre();
+}
+function ajReg(di){
+  var a=document.getElementById('ga-'+di).value.trim();
+  if(!a){alert('Saisissez l\u2019activité régalienne.');return;}
+  var pv=document.getElementById('gp-'+di).value;
+  DATA.directions[di].regaliennes.push({a:a,ind:document.getElementById('gi-'+di).value.trim()||'—',real:document.getElementById('gr-'+di).value.trim()||'—',p:(pv===''?null:parseFloat(pv))});
+  sauver(); rendre();
+}
+function supReg(di,gi){
+  if(!confirm('Supprimer cette activité régalienne ?'))return;
+  DATA.directions[di].regaliennes.splice(gi,1);
+  sauver(); rendre();
+}
+function ajAO(pi){
+  var o=document.getElementById('ao-'+pi).value.trim();
+  if(!o){alert('Saisissez l\u2019objet de l\u2019appel d\u2019offres.');return;}
+  DATA.projets[pi].aos.push({o:o,e:document.getElementById('ae-'+pi).value.trim()||'—'});
+  sauver(); rendre();
+}
+function supAO(pi,ai){
+  if(!confirm('Supprimer cet appel d\u2019offres ?'))return;
+  DATA.projets[pi].aos.splice(ai,1);
+  sauver(); rendre();
+}
+function exporter(){
+  var blob=new Blob([JSON.stringify(DATA,null,2)],{type:'application/json'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='maepe-tableau-de-bord-donnees.json'; a.click();
+}
+function importer(ev){
+  var f=ev.target.files[0]; if(!f)return;
+  var rd=new FileReader();
+  rd.onload=function(){try{DATA=JSON.parse(rd.result); sauver(); rendre(); alert('Données importées.');}catch(e){alert('Fichier invalide.');}};
+  rd.readAsText(f);
+}
+function reinitialiser(){
+  if(!confirm('Revenir aux données initiales du Rapport annuel 2025 ? Les mises à jour saisies seront perdues (pensez à exporter d\'abord).'))return;
+  DATA=JSON.parse(JSON.stringify(SEED));
+  DATA.projets.forEach(function(p){p.persp=PERSP[p.sigle]||'';p.aos=JSON.parse(JSON.stringify(AOS[p.sigle]||[]));p.eng=(p.sigle==='FAR')?105:null;});
+  DATA.directions.forEach(function(dr){dr.regaliennes=JSON.parse(JSON.stringify(REGAL[dr.sigle]||[]));dr.planif=JSON.parse(JSON.stringify(PLANIF[dr.sigle]||[]));});
+  sauver(); rendre(); remplirForm();
+}
+var RAPPORT_TEXTE='';
+var RAPPORT_NOM='rapport-annuel-maepe-genere.txt';
+function genererRapport(){
+  var an=new Date().getFullYear();
+  var decs=DATA.projets.filter(function(p){return p.dec!==null;});
+  var moyDec=decs.length? (decs.reduce(function(t,p){return t+p.dec;},0)/decs.length).toFixed(1) : 'n/d';
+  var alertes=DATA.projets.filter(function(p){return p.alerte;});
+  var nbAO=DATA.projets.reduce(function(t,p){return t+(p.aos?p.aos.length:0);},0);
+  var L=[];
+  L.push('RÉPUBLIQUE DE DJIBOUTI');
+  L.push('Ministère de l’Agriculture, de l’Eau, de la Pêche, de l’Élevage et des Ressources Halieutiques (MAEPE-RH)');
+  L.push('');
+  L.push('RAPPORT ANNUEL D’ACTIVITÉS DU MINISTÈRE — '+an);
+  L.push('(Document généré automatiquement par la plateforme de suivi, à partir des données consolidées des projets, des directions et des sous-directions régionales)');
+  L.push('');
+  L.push('1. VUE D’ENSEMBLE DU MINISTÈRE');
+  L.push('La plateforme couvre l’ensemble des structures du Ministère : Secrétariat Général, Direction de l’Administration Générale, Bureau de Gestion de Projets, '+DATA.directions.length+' directions et services (dont la société sous tutelle SDSA) et les 5 sous-directions régionales.');
+  L.push('Projets en cours suivis : '+DATA.projets.length+' · Initiatives en pipeline : '+DATA.pipeline.length+' · Appels d’offres et recrutements en cours : '+nbAO+' · Taux de décaissement moyen (projets renseignés) : '+moyDec+' % · Alertes actives : '+alertes.length+'.');
+  L.push('');
+  L.push('2. PROJETS — RÉALISATIONS ET SUIVI DES 3 VOLETS (PHYSIQUE, DÉCAISSEMENT, ENGAGEMENT)');
+  DATA.projets.forEach(function(p){
+    L.push('');
+    L.push('— '+p.sigle+' — '+p.nom);
+    L.push('Bailleur / enveloppe : '+p.bailleur);
+    L.push('Statut : '+p.statut+' · Avancement physique : '+((p.phy===null||p.phy===undefined)?'n/d':p.phy+' %')+' · Décaissement : '+((p.dec===null||p.dec===undefined)?'n/d':p.dec+' %')+' · Engagement : '+((p.eng===null||p.eng===undefined)?'n/d':p.eng+' %'));
+    L.push('Zones : '+p.zones);
+    L.push('Réalisations et avancement : '+p.note);
+    if(p.aos&&p.aos.length){ L.push('Appels d’offres et recrutements en cours :'); p.aos.forEach(function(a){ L.push('  • '+a.o+' — '+a.e); }); }
+  });
+  L.push('');
+  L.push('3. ACTIVITÉS RÉGALIENNES DES DÉPARTEMENTS — TABLEAUX DE SUIVI');
+  DATA.directions.forEach(function(d){
+    L.push('');
+    L.push('— '+d.sigle+' ('+d.nom+')');
+    (d.regaliennes||[]).forEach(function(g){ L.push('  • '+g.a+' — indicateur/cible : '+g.ind+' — réalisation : '+g.real+' — taux : '+((g.p===null||g.p===undefined)?'n/d':g.p+' %')); });
+  });
+  L.push('');
+  L.push('4. PLANS D’ACTION DES DIRECTIONS');
+  DATA.directions.forEach(function(d){
+    var renseignees=d.actions.filter(function(a){return a.p!==null&&a.p!==undefined;});
+    var moy=renseignees.length? (renseignees.reduce(function(t,a){return t+a.p;},0)/renseignees.length).toFixed(0)+' % (moyenne des actions renseignées)':'à renseigner';
+    L.push('');
+    L.push('— '+d.sigle+' ('+d.nom+') — avancement du plan d’action : '+moy);
+    d.actions.forEach(function(a){ L.push('  • '+a.a+' — échéance : '+a.e+' — responsable : '+a.r+' — réalisation : '+((a.p===null||a.p===undefined)?'n/d':a.p+' %')); });
+  });
+  L.push('');
+  L.push('');
+  L.push('5. PLANIFICATION TRIMESTRIELLE DES ACTIONS À SUIVRE');
+  DATA.directions.forEach(function(d){
+    (d.planif||[]).forEach(function(a){ L.push('• '+d.sigle+' ['+a.t+'] '+a.a+' — responsable : '+a.r+' — statut : '+a.s+' — réalisation : '+((a.p===null||a.p===undefined)?'n/d':a.p+' %')); });
+  });
+  L.push('');
+  L.push('6. DIFFICULTÉS ET ALERTES DE L’ANNÉE');
+  if(alertes.length){ alertes.forEach(function(p){ L.push('• '+p.sigle+' : '+p.alerte); }); }
+  else { L.push('Aucune alerte active à la date de génération.'); }
+  L.push('');
+  L.push('7. PERSPECTIVES');
+  DATA.projets.forEach(function(p){ if(p.persp){ L.push('• '+p.sigle+' : '+p.persp); } });
+  L.push('');
+  L.push('Pipeline du Ministère :');
+  DATA.pipeline.forEach(function(x){ L.push('• '+x.t+' — '+x.d); });
+  L.push('');
+  L.push('— Fin du rapport généré automatiquement. Les chiffres proviennent des données consolidées dans la plateforme (état initial : Rapport annuel 2025 du MAEPE-RH ; mises à jour des coordonnateurs et des directions).');
+  RAPPORT_TEXTE=L.join('\n');
+  RAPPORT_NOM='rapport-annuel-'+an+'-maepe.txt';
+  document.getElementById('rapportContenu').textContent=RAPPORT_TEXTE;
+  var z=document.getElementById('rapportZone'); z.style.display='block';
+  z.scrollIntoView({behavior:'smooth'});
+}
+function genererTrimestriel(){
+  var t=document.getElementById('selTrim').value;
+  var an=new Date().getFullYear();
+  var auj=new Date().toLocaleDateString('fr-CA');
+  var decs=DATA.projets.filter(function(p){return p.dec!==null;});
+  var moyDec=decs.length? (decs.reduce(function(x,p){return x+p.dec;},0)/decs.length).toFixed(1) : 'n/d';
+  var alertes=DATA.projets.filter(function(p){return p.alerte;});
+  var nbAO=DATA.projets.reduce(function(x,p){return x+(p.aos?p.aos.length:0);},0);
+  var L=[];
+  L.push('RÉPUBLIQUE DE DJIBOUTI');
+  L.push('Ministère de l\u2019Agriculture, de l\u2019Eau, de la Pêche, de l\u2019Élevage et des Ressources Halieutiques (MAEPE-RH)');
+  L.push('');
+  L.push('RAPPORT TRIMESTRIEL DE SUIVI DU PORTEFEUILLE — TRIMESTRE '+t+' / '+an);
+  L.push('(Généré automatiquement par la plateforme de suivi — situation consolidée au '+auj+', à partir des rapports des coordonnateurs et des directions)');
+  L.push('');
+  L.push('1. SYNTHÈSE DU TRIMESTRE');
+  L.push('Projets suivis : '+DATA.projets.length+' · Appels d\u2019offres et recrutements en cours : '+nbAO+' · Décaissement moyen (projets renseignés) : '+moyDec+' % · Alertes actives : '+alertes.length+' · Initiatives en pipeline : '+DATA.pipeline.length+'.');
+  L.push('');
+  L.push('2. PROJETS — SITUATION DES 3 VOLETS ET FAITS DU TRIMESTRE');
+  DATA.projets.forEach(function(p){
+    L.push('');
+    L.push('— '+p.sigle+' ('+p.statut+') — Physique : '+((p.phy===null||p.phy===undefined)?'n/d':p.phy+' %')+' · Décaissement : '+((p.dec===null)?'n/d':p.dec+' %')+' · Engagement : '+((p.eng===null||p.eng===undefined)?'n/d':p.eng+' %'));
+    L.push('Faits et avancement : '+p.note);
+    if(p.aos&&p.aos.length){ L.push('Passation des marchés en cours :'); p.aos.forEach(function(a){ L.push('  • '+a.o+' — '+a.e); }); }
+  });
+  L.push('');
+  L.push('3. ACTIVITÉS RÉGALIENNES DES DÉPARTEMENTS');
+  DATA.directions.forEach(function(d){
+    L.push('');
+    L.push('— '+d.sigle+' ('+d.nom+')');
+    (d.regaliennes||[]).forEach(function(g){ L.push('  • '+g.a+' — '+g.real+' (taux : '+((g.p===null||g.p===undefined)?'n/d':g.p+' %')+')'); });
+  });
+  L.push('');
+  L.push('4. PLANS D\u2019ACTION DES DIRECTIONS — AVANCEMENT');
+  DATA.directions.forEach(function(d){
+    var rens=d.actions.filter(function(a){return a.p!==null&&a.p!==undefined;});
+    var moy=rens.length? (rens.reduce(function(x,a){return x+a.p;},0)/rens.length).toFixed(0)+' %':'à renseigner';
+    L.push('• '+d.sigle+' : avancement moyen du plan d\u2019action : '+moy+' ('+d.actions.length+' actions suivies)');
+  });
+  L.push('');
+  L.push('5. PLANIFICATION DES ACTIONS DU TRIMESTRE '+t+' — À SUIVRE');
+  DATA.directions.forEach(function(d){
+    var duT=(d.planif||[]).filter(function(a){return a.t==='T'+t;});
+    if(duT.length){
+      L.push('— '+d.sigle+' :');
+      duT.forEach(function(a){ L.push('  • '+a.a+' — responsable : '+a.r+' — statut : '+a.s+' — réalisation : '+((a.p===null||a.p===undefined)?'n/d':a.p+' %')); });
+    }
+  });
+  L.push('');
+  L.push('6. ALERTES ET POINTS DE VIGILANCE');
+  if(alertes.length){ alertes.forEach(function(p){ L.push('• '+p.sigle+' : '+p.alerte); }); }
+  else { L.push('Aucune alerte active.'); }
+  L.push('');
+  L.push('7. PRIORITÉS DU TRIMESTRE SUIVANT');
+  DATA.projets.forEach(function(p){ if(p.persp){ L.push('• '+p.sigle+' : '+p.persp); } });
+  L.push('');
+  L.push('Pipeline à faire avancer :');
+  DATA.pipeline.forEach(function(x){ L.push('• '+x.t+' — '+x.d); });
+  L.push('');
+  L.push('— Fin du rapport trimestriel généré automatiquement (données consolidées dans la plateforme ; état initial : Rapport annuel 2025 du MAEPE-RH).');
+  RAPPORT_TEXTE=L.join('\n');
+  RAPPORT_NOM='rapport-trimestriel-T'+t+'-'+an+'-maepe.txt';
+  document.getElementById('rapportContenu').textContent=RAPPORT_TEXTE;
+  var z=document.getElementById('rapportZone'); z.style.display='block';
+  z.scrollIntoView({behavior:'smooth'});
+}
+function telechargerRapport(){
+  if(!RAPPORT_TEXTE){genererRapport();}
+  var blob=new Blob([RAPPORT_TEXTE],{type:'text/plain;charset=utf-8'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=RAPPORT_NOM; a.click();
+}
+function initCarte(){
+  var el=document.getElementById('carteDjibouti');
+  if(!el){return;}
+  if(typeof L==='undefined'){el.innerHTML='<p class="mini" style="padding:16px">Carte interactive non chargée (connexion requise pour le fond OpenStreetMap). Les zones d\u2019intervention sont détaillées dans la section suivante.</p>';return;}
+  var map=L.map('carteDjibouti').setView([11.55,42.9],8);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap contributors'}).addTo(map);
+  var zones=[
+   {n:'Djibouti-ville',lat:11.595,lon:43.148,c:'#c0392b',p:'<strong>BREFONS</strong> — périmètres irrigués d\u2019Ambouli<br><strong>PEJACC</strong> — marchés de Quartier 6 et d\u2019Ambouli<br><strong>DRIVE</strong> — port de Doraleh, corridor bétail'},
+   {n:'Tadjourah',lat:11.785,lon:42.884,c:'#e67e22',p:'<strong>BREFONS</strong> — forages de Doka-Af et Garba Naba, périmètres de Ripta et Terdo<br><strong>PEJACC</strong> — clinique mobile<br><strong>PGIRE</strong> — 5 bassins versants, 23 localités'},
+   {n:'Obock',lat:11.967,lon:43.283,c:'#e67e22',p:'<strong>BREFONS</strong> — forage de Souwali, eau potable de Karta<br><strong>PGIRE</strong> — 2 bassins versants ; nouveau forage de Medeho en 2026'},
+   {n:'Dikhil',lat:11.108,lon:42.371,c:'#c0392b',p:'<strong>PGIRE</strong> — 6 bassins versants, 14 localités<br><strong>PEJACC</strong> — clinique mobile, forages de Gallafi<br><strong>FAR</strong> — palmier dattier de la plaine de Hanlé<br><strong>DRESS-EA</strong> — stations d\u2019As Eyla et de Yoboki, retenues'},
+   {n:'Ali Sabieh',lat:11.156,lon:42.713,c:'#0e7c8c',p:'<strong>BREFONS</strong> — mini-système d\u2019eau potable de Holl-Holl<br><strong>DRESS-EA</strong> — station de Goubetto, lignes de crédit'},
+   {n:'Arta',lat:11.523,lon:42.845,c:'#0e7c8c',p:'<strong>BREFONS</strong> — dossiers de sous-projets CPEC en évaluation<br>Suivi régional des interventions du Ministère'}
+  ];
+  zones.forEach(function(z){
+    var nb=(z.p.match(/<strong>/g)||[]).length;
+    L.circleMarker([z.lat,z.lon],{radius:8+nb*2,color:'#fff',weight:2,fillColor:z.c,fillOpacity:0.9})
+      .addTo(map).bindPopup('<strong>'+z.n+'</strong><br>'+z.p);
+  });
+}
+rendre();
+initCarte();
+</script>
+</body>
+</html>
